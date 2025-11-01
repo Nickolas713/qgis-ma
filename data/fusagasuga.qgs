@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QGIS projectname="Fusagasuga SIG" version="3.34.0" simplifyMaxScale="1" simplifyLocal="1">
+  <title>Fusagasugá – SIG Demo</title>
+
+  <!-- Árvore de camadas -->
+  <layer-tree-group name="Fusagasuga" checked="Qt::Checked" expanded="1">
+    <layer-tree-layer id="limite_fusa" name="Limite Fusagasugá" checked="Qt::Checked" expanded="1" providerKey="postgres"/>
+    <layer-tree-layer id="pontos_fusa" name="Pontos de interesse" checked="Qt::Checked" expanded="1" providerKey="postgres"/>
+    <layer-tree-layer id="vias_fusa" name="Vias principais" checked="Qt::Checked" expanded="1" providerKey="postgres"/>
+  </layer-tree-group>
+
+  <!-- Camadas -->
+  <projectlayers>
+
+    <!-- 1) Limite -->
+    <maplayer id="limite_fusa" name="Limite Fusagasugá" type="vector" geometry="Polygon" autoRefreshTime="0" hasScaleBasedVisibilityFlag="0">
+      <provider>postgres</provider>
+      <datasource>dbname='qgisdb' host=db port=5432 user='qgis' password='qgis' sslmode=disable key='id' srid=4326 type=Polygon table="public"."limite_fusagasuga" (geom) sql=</datasource>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:4326</authid>
+          <srid>4326</srid>
+          <description>WGS 84</description>
+          <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        </spatialrefsys>
+      </srs>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" type="fill">
+            <layer pass="0" class="SimpleFill">
+              <prop k="color" v="255,255,204,80"/>
+              <prop k="outline_color" v="0,0,0,255"/>
+              <prop k="outline_width" v="0.8"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+      <extent>
+        <xmin>-74.3820</xmin>
+        <xmax>-74.3370</xmax>
+        <ymin>4.3260</ymin>
+        <ymax>4.3830</ymax>
+      </extent>
+    </maplayer>
+
+    <!-- 2) Pontos -->
+    <maplayer id="pontos_fusa" name="Pontos de interesse" type="vector" geometry="Point" autoRefreshTime="0" hasScaleBasedVisibilityFlag="0">
+      <provider>postgres</provider>
+      <datasource>dbname='qgisdb' host=db port=5432 user='qgis' password='qgis' sslmode=disable key='id' srid=4326 type=Point table="public"."pontos_interes_fusa" (geom) sql=</datasource>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:4326</authid>
+          <srid>4326</srid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" type="marker">
+            <layer class="SimpleMarker">
+              <prop k="name" v="circle"/>
+              <prop k="size" v="3.2"/>
+              <prop k="color" v="255,0,0,255"/>
+              <prop k="outline_color" v="0,0,0,255"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+
+    <!-- 3) Vias -->
+    <maplayer id="vias_fusa" name="Vias principais" type="vector" geometry="LineString" autoRefreshTime="0" hasScaleBasedVisibilityFlag="0">
+      <provider>postgres</provider>
+      <datasource>dbname='qgisdb' host=db port=5432 user='qgis' password='qgis' sslmode=disable key='id' srid=4326 type=LineString table="public"."vias_principais_fusa" (geom) sql=</datasource>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:4326</authid>
+          <srid>4326</srid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <renderer-v2 type="singleSymbol">
+        <symbols>
+          <symbol name="0" type="line">
+            <layer class="SimpleLine">
+              <prop k="width" v="0.8"/>
+              <prop k="color" v="0,0,255,255"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+
+  </projectlayers>
+
+  <properties>
+    <WMSServiceProperties>
+      <WMSServiceTitle>Fusagasugá – SIG</WMSServiceTitle>
+      <WMSServiceAbstract>Mapa demo de Fusagasugá servido por QGIS Server no Coolify</WMSServiceAbstract>
+      <WMSRootName>Fusagasuga</WMSRootName>
+      <WMSExtent>
+        <xmin>-74.3820</xmin>
+        <xmax>-74.3370</xmax>
+        <ymin>4.3260</ymin>
+        <ymax>4.3830</ymax>
+      </WMSExtent>
+    </WMSServiceProperties>
+  </properties>
+</QGIS>
