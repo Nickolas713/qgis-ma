@@ -10,7 +10,6 @@ services:
       - POSTGRES_DB=qgisdb
     volumes:
       - pg_data:/var/lib/postgresql/data
-      # script que cria a tabela e insere dados
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   qgis:
@@ -19,19 +18,17 @@ services:
     depends_on:
       - db
     ports:
-      - "7315:80"         # ← você pediu essa porta
+      - "7315:80"             # ← você pediu essa porta
     environment:
-      # log mais silencioso
       - QGIS_SERVER_LOG_LEVEL=0
-      # diz pro QGIS onde procurar projetos
+      # onde o QGIS vai procurar projetos
       - QGIS_SERVER_LANDING_PAGE_PROJECTS_DIRECTORIES=/data
-      # diz qual projeto carregar por padrão
-      - QGIS_PROJECT_FILE=/data/project.qgs
-      # opcional, ajuda em links internos
+      # qual projeto carregar por padrão
+      - QGIS_PROJECT_FILE=/data/fusagasuga.qgs
+      # opcional: se for acessar com domínio, muda isso
       - QGIS_SERVER_LANDING_PAGE_BASE_URL=http://localhost:7315
     volumes:
-      # onde está o seu .qgs
-      - ./data:/data:ro
+      - ./data:/data:ro       # seu projeto vai aqui
 
 volumes:
   pg_data:
