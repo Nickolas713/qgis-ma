@@ -1,81 +1,117 @@
--- db/init.sql
-
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- 1) limite da cidade (polígono simplificado, serve só pra demo WMS)
-DROP TABLE IF EXISTS limite_fusagasuga;
-CREATE TABLE limite_fusagasuga (
+-- 1) Manzanas / quadras
+DROP TABLE IF EXISTS fusa_manzanas;
+CREATE TABLE fusa_manzanas (
     id SERIAL PRIMARY KEY,
-    nome TEXT NOT NULL,
+    codigo VARCHAR(20),
+    nome VARCHAR(120),
     geom geometry(Polygon, 4326) NOT NULL
 );
 
--- polígono simples ao redor da área urbana de Fusagasugá
-INSERT INTO limite_fusagasuga (nome, geom)
+INSERT INTO fusa_manzanas (codigo, nome, geom)
 VALUES (
-    'Fusagasugá - área urbana (aprox.)',
+    'MZ-001',
+    'Centro',
     ST_GeomFromText(
         'POLYGON((
-            -74.3820 4.3260,
-            -74.3450 4.3260,
-            -74.3370 4.3480,
-            -74.3370 4.3660,
-            -74.3450 4.3790,
-            -74.3700 4.3830,
-            -74.3820 4.3720,
-            -74.3820 4.3260
-        ))',
-        4326
+            -74.3665 4.3385,
+            -74.3625 4.3385,
+            -74.3625 4.3345,
+            -74.3665 4.3345,
+            -74.3665 4.3385
+        ))', 4326
     )
 );
 
--- 2) pontos de interesse
-DROP TABLE IF EXISTS pontos_interes_fusa;
-CREATE TABLE pontos_interes_fusa (
+-- 2) Predios / imóveis
+DROP TABLE IF EXISTS fusa_predios;
+CREATE TABLE fusa_predios (
     id SERIAL PRIMARY KEY,
-    nome TEXT NOT NULL,
-    categoria TEXT,
-    geom geometry(Point, 4326) NOT NULL
+    cod_catastral VARCHAR(50),
+    endereco TEXT,
+    bairro TEXT,
+    manzana_id INT REFERENCES fusa_manzanas(id) ON DELETE SET NULL,
+    frente_metros NUMERIC(10,2),
+    area_terreno NUMERIC(12,2),
+    url_fachada TEXT,
+    url_pano_360 TEXT,
+    geom geometry(Polygon, 4326) NOT NULL
 );
 
--- Plaza / Parque Principal
-INSERT INTO pontos_interes_fusa (nome, categoria, geom)
+INSERT INTO fusa_predios (
+    cod_catastral, endereco, bairro, manzana_id,
+    frente_metros, area_terreno,
+    url_fachada, url_pano_360, geom
+)
 VALUES (
-    'Parque Principal de Fusagasugá',
-    'praça',
-    ST_SetSRID(ST_MakePoint(-74.3638, 4.3369), 4326)
+    'FUSA-0001-0001',
+    'Carrera 6 # 5-20',
+    'Centro',
+    1,
+    8.50,
+    120.00,
+    'http://fusa-assets.local/assets/fotos/fachada_0001.jpg',
+    'http://fusa-assets.local/assets/fotos360/pano_0001.jpg',
+    ST_GeomFromText(
+        'POLYGON((
+            -74.3655 4.3375,
+            -74.3650 4.3375,
+            -74.3650 4.3370,
+            -74.3655 4.3370,
+            -74.3655 4.3375
+        ))', 4326
+    )
 );
 
--- Hospital San Rafael
-INSERT INTO pontos_interes_fusa (nome, categoria, geom)
-VALUES (
-    'Hospital San Rafael',
-    'saúde',
-    ST_SetSRID(ST_MakePoint(-74.3685, 4.3309), 4326)
-);
-
--- Terminal de Transportes
-INSERT INTO pontos_interes_fusa (nome, categoria, geom)
-VALUES (
-    'Terminal de Transportes',
-    'transporte',
-    ST_SetSRID(ST_MakePoint(-74.3645, 4.3455), 4326)
-);
-
--- 3) vias principais (linha simples só pra teste)
-DROP TABLE IF EXISTS vias_principais_fusa;
-CREATE TABLE vias_principais_fusa (
+-- 3) Vias
+DROP TABLE IF EXISTS fusa_vias;
+CREATE TABLE fusa_vias (
     id SERIAL PRIMARY KEY,
-    nome TEXT NOT NULL,
+    nome VARCHAR(120),
+    tipo VARCHAR(50),
     geom geometry(LineString, 4326) NOT NULL
 );
 
--- linha norte-sul passando perto do centro
-INSERT INTO vias_principais_fusa (nome, geom)
+INSERT INTO fusa_vias (nome, tipo, geom)
 VALUES (
-    'Eje Central - Demo',
+    'Carrera 6',
+    'Principal',
     ST_GeomFromText(
-        'LINESTRING(-74.3650 4.3250, -74.3645 4.3300, -74.3640 4.3360, -74.3635 4.3440, -74.3630 4.3500)',
+        'LINESTRING(-74.3660 4.3400, -74.3658 4.3380, -74.3655 4.3360, -74.3653 4.3340)',
         4326
     )
+);
+
+-- 4) Fotos ligadas ao imóvel (1:N)
+DROP TABLE IF EXISTS fusa_fotos;
+CREATE TABLE fusa_fotos (
+    id SERIAL PRIMARY KEY,
+    predio_id INT REFERENCES fusa_predios(id) ON DELETE CASCADE,
+    titulo TEXT,
+    url_foto TEXT,
+    obs TEXT
+);
+
+INSERT INTO fusa_fotos (predio_id, titulo, url_foto)
+VALUES
+(1, 'Fachada Principal', 'http://fusa-assets.local/assets/fotos/fachada_0001.jpg'),
+(1, 'Lateral direita', 'http://fusa-assets.local/assets/fotos/fachada_0002.jpg');
+
+-- 5) Pontos 360
+DROP TABLE IF EXISTS fusa_panos_360;
+CREATE TABLE fusa_panos_360 (
+    id SERIAL PRIMARY KEY,
+    predio_id INT REFERENCES fusa_predios(id) ON DELETE SET NULL,
+    titulo TEXT,
+    url_pano TEXT,
+    geom geometry(Point, 4326) NOT NULL
+);
+
+INSERT INTO fusa_panos_360 (predio_id, titulo, url_pano, geom)
+VALUES (
+    1,
+    'Ponto 360 entrada',
+    'http://fusa-assets.local/assets/fotos360/pano_0001.jpg',
+    ST_SetSRID(ST_MakePoint(-74.3653, 4.3373), 4326)
 );

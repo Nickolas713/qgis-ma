@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   db:
-    image: postgis/postgis:16-3.4
-    container_name: qgis-db
+    image: postgis/postgis:16-3.5
+    container_name: fusa-db
     restart: unless-stopped
     environment:
       - POSTGRES_USER=qgis
@@ -11,26 +11,34 @@ services:
       - POSTGRES_DB=qgisdb
     volumes:
       - pg_data:/var/lib/postgresql/data
-      # script pra criar as tabelas da cidade
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  assets:
+    image: nginx:alpine
+    container_name: fusa-assets
+    restart: unless-stopped
+    ports:
+      - "7316:80"          # ← porta só pra servir imagem (pode mudar)
+    volumes:
+      - ./assets:/usr/share/nginx/html:ro
+    # acessa em http://SEU_HOST:7316/assets/...
+    # porque vamos colocar as imagens dentro de ./assets
 
   qgis:
     image: qgis/qgis-server:ltr
-    container_name: qgis-server
+    container_name: fusa-qgis
     depends_on:
       - db
     restart: unless-stopped
     ports:
-      - "7315:80"        # ← vai acessar por aqui
+      - "7315:80"          # ← QGIS Server
     environment:
-      # diz pro QGIS onde procurar projetos
       - QGIS_SERVER_LANDING_PAGE_PROJECTS_DIRECTORIES=/io/data
-      # opcional: se quiser já forçar um projeto padrão
-      # - QGIS_PROJECT_FILE=/io/data/fusagasuga/fusagasuga.qgz
+      - QGIS_SERVER_LOG_LEVEL=0
+      # se quiser travar num projeto:
+      - QGIS_PROJECT_FILE=/io/data/fusagasuga.qgs
     volumes:
-      # aqui vão os projetos .qgs/.qgz
       - ./data:/io/data:ro
-      # sobrescreve o nginx padrão pra não mostrar "Welcome to nginx!"
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
