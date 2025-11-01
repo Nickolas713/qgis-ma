@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QGIS projectname="Fusagasuga" version="3.34.0">
+  <title>Fusagasugá – Cadastro</title>
+
+  <layer-tree-group name="Fusagasuga" checked="Qt::Checked" expanded="1">
+    <layer-tree-layer id="predios" name="Imóveis" checked="Qt::Checked" providerKey="postgres"/>
+    <layer-tree-layer id="vias" name="Vias" checked="Qt::Checked" providerKey="postgres"/>
+  </layer-tree-group>
+
+  <projectlayers>
+    <maplayer id="predios" name="Imóveis" type="vector" geometry="Polygon">
+      <provider>postgres</provider>
+      <datasource>dbname='qgisdb' host=fusa-db port=5432 user='qgis' password='qgis' sslmode=disable key='id' srid=4326 type=Polygon table="public"."fusa_predios"(geom) sql=</datasource>
+    </maplayer>
+
+    <maplayer id="vias" name="Vias" type="vector" geometry="LineString">
+      <provider>postgres</provider>
+      <datasource>dbname='qgisdb' host=fusa-db port=5432 user='qgis' password='qgis' sslmode=disable key='id' srid=4326 type=LineString table="public"."fusa_vias"(geom) sql=</datasource>
+    </maplayer>
+  </projectlayers>
+
+  <properties>
+    <WMSServiceProperties>
+      <WMSServiceTitle>Fusagasugá – Cadastro</WMSServiceTitle>
+    </WMSServiceProperties>
+  </properties>
+</QGIS>

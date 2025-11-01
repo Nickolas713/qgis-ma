@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- 1) Manzanas / quadras
+-- manzanas
 DROP TABLE IF EXISTS fusa_manzanas;
 CREATE TABLE fusa_manzanas (
     id SERIAL PRIMARY KEY,
@@ -24,7 +24,7 @@ VALUES (
     )
 );
 
--- 2) Predios / imóveis
+-- prédios
 DROP TABLE IF EXISTS fusa_predios;
 CREATE TABLE fusa_predios (
     id SERIAL PRIMARY KEY,
@@ -51,8 +51,8 @@ VALUES (
     1,
     8.50,
     120.00,
-    'http://fusa-assets.local/assets/fotos/fachada_0001.jpg',
-    'http://fusa-assets.local/assets/fotos360/pano_0001.jpg',
+    'http://fusa-assets:80/assets/fotos/fachada_0001.jpg',
+    'http://fusa-assets:80/assets/fotos360/pano_0001.jpg',
     ST_GeomFromText(
         'POLYGON((
             -74.3655 4.3375,
@@ -64,7 +64,7 @@ VALUES (
     )
 );
 
--- 3) Vias
+-- vias
 DROP TABLE IF EXISTS fusa_vias;
 CREATE TABLE fusa_vias (
     id SERIAL PRIMARY KEY,
@@ -83,22 +83,7 @@ VALUES (
     )
 );
 
--- 4) Fotos ligadas ao imóvel (1:N)
-DROP TABLE IF EXISTS fusa_fotos;
-CREATE TABLE fusa_fotos (
-    id SERIAL PRIMARY KEY,
-    predio_id INT REFERENCES fusa_predios(id) ON DELETE CASCADE,
-    titulo TEXT,
-    url_foto TEXT,
-    obs TEXT
-);
-
-INSERT INTO fusa_fotos (predio_id, titulo, url_foto)
-VALUES
-(1, 'Fachada Principal', 'http://fusa-assets.local/assets/fotos/fachada_0001.jpg'),
-(1, 'Lateral direita', 'http://fusa-assets.local/assets/fotos/fachada_0002.jpg');
-
--- 5) Pontos 360
+-- pontos 360
 DROP TABLE IF EXISTS fusa_panos_360;
 CREATE TABLE fusa_panos_360 (
     id SERIAL PRIMARY KEY,
@@ -112,6 +97,6 @@ INSERT INTO fusa_panos_360 (predio_id, titulo, url_pano, geom)
 VALUES (
     1,
     'Ponto 360 entrada',
-    'http://fusa-assets.local/assets/fotos360/pano_0001.jpg',
+    'http://fusa-assets:80/assets/fotos360/pano_0001.jpg',
     ST_SetSRID(ST_MakePoint(-74.3653, 4.3373), 4326)
 );

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgis/postgis:16-3.5
+    image: postgis/postgis:16-3.4
     container_name: fusa-db
     restart: unless-stopped
     environment:
@@ -12,34 +12,65 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - qgisnet
+
+  qgis:
+    image: qgis/qgis-server:ltr
+    container_name: fusa-qgis
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "7315:80"               # QGIS Server exposto
+    environment:
+      - QGIS_SERVER_LANDING_PAGE_PROJECTS_DIRECTORIES=/io/data
+      - QGIS_SERVER_LOG_LEVEL=0
+      # se quiser forçar um projeto:
+      # - QGIS_PROJECT_FILE=/io/data/fusagasuga/fusagasuga.qgs
+    volumes:
+      - ./data:/io/data:ro
+      - ./nginx-qgis.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - qgisnet
 
   assets:
     image: nginx:alpine
     container_name: fusa-assets
     restart: unless-stopped
     ports:
-      - "7316:80"          # ← porta só pra servir imagem (pode mudar)
+      - "7316:80"               # servidor de mídias
     volumes:
       - ./assets:/usr/share/nginx/html:ro
-    # acessa em http://SEU_HOST:7316/assets/...
-    # porque vamos colocar as imagens dentro de ./assets
+    networks:
+      - qgisnet
 
-  qgis:
-    image: qgis/qgis-server:ltr
-    container_name: fusa-qgis
-    depends_on:
-      - db
+  lizmap:
+    image: 3liz/lizmap-web-client:3.9
+    container_name: fusa-lizmap
     restart: unless-stopped
-    ports:
-      - "7315:80"          # ← QGIS Server
+    depends_on:
+      - qgis
     environment:
-      - QGIS_SERVER_LANDING_PAGE_PROJECTS_DIRECTORIES=/io/data
-      - QGIS_SERVER_LOG_LEVEL=0
-      # se quiser travar num projeto:
-      - QGIS_PROJECT_FILE=/io/data/fusagasuga.qgs
+      # URL do QGIS Server vista de dentro da rede docker
+      - LIZMAP_MAPSERVER_URL=http://fusa-qgis/ows/
+      # idioma padrão
+      - LIZMAP_LANG=pt_BR
+      # opcional: fuso
+      - TIMEZONE=America/Bogota
     volumes:
-      - ./data:/io/data:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # projetos QGIS que o Lizmap vai listar
+      - ./data:/srv/projects:ro
+      # configs e cache do lizmap
+      - lizmap_var:/var/www/web-var
+    ports:
+      - "7317:80"               # viewer web
+    networks:
+      - qgisnet
+
+networks:
+  qgisnet:
 
 volumes:
   pg_data:
+  lizmap_var:
