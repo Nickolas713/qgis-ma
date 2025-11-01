@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  qgis:
+    image: qgis/qgis-server:latest
+    restart: unless-stopped
+    ports:
+      - "7315:80"          # ← você vai acessar por essa porta
+    environment:
+      # básico do QGIS Server
+      - QGIS_SERVER_LOG_LEVEL=0
+      - QGIS_SERVER_PARALLEL_RENDERING=1
+      - QGIS_SERVER_MAX_THREADS=4
+      # se você tiver um projeto .qgz dentro de ./data
+      - QGIS_PROJECT_FILE=/data/project.qgz
+      # acesso ao banco
+      - PGHOST=db
+      - PGUSER=qgis
+      - PGPASSWORD=qgis
+      - PGDATABASE=qgisdb
+    volumes:
+      - ./data:/data       # coloque seu project.qgz aqui
+    depends_on:
+      - db
+
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=qgis
+      - POSTGRES_PASSWORD=qgis
+      - POSTGRES_DB=qgisdb
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
